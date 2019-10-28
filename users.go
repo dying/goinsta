@@ -571,8 +571,7 @@ func (user *User) Tags(minTimestamp []byte) (*FeedMedia, error) {
 
 // AcceptFollowReq accepts the follow request
 // User.Friendship will be updated
-func (user *User) AcceptFollowReq() error {
-	insta := user.inst
+func (user *User) AcceptFollowReq(insta *Instagram) error {
 	data, err := insta.prepareData(
 		map[string]interface{}{
 			"user_id":    user.ID,
