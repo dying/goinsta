@@ -382,6 +382,44 @@ func (account *Account) SetBiography(bio string) error {
 	return err
 }
 
+// SetUsername changes your Instagram's username.
+//
+// This function updates current Account information.
+func (account *Account) SetUsername(username string) error {
+	account.edit() // preparing to edit
+	insta := account.inst
+	data, err := insta.prepareData(
+		map[string]interface{}{
+			"username": username,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	body, err := insta.sendRequest(
+		&reqOptions{
+			Endpoint: urlEditProfile,
+			Query:    generateSignature(data),
+			IsPost:   true,
+		},
+	)
+	if err == nil {
+		var resp struct {
+			User struct {
+				Pk       int64  `json:"pk"`
+				Username string `json:"username"`
+			} `json:"user"`
+			Status string `json:"status"`
+		}
+		err = json.Unmarshal(body, &resp)
+		if err == nil {
+			account.Username = resp.User.Username
+		}
+	}
+	return err
+}
+
 // Liked are liked publications
 func (account *Account) Liked() *FeedMedia {
 	insta := account.inst
