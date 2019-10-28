@@ -568,3 +568,69 @@ func (user *User) Tags(minTimestamp []byte) (*FeedMedia, error) {
 	media.uid = user.ID
 	return media, err
 }
+
+// AcceptFollowReq accepts the follow request
+// User.Friendship will be updated
+func (user *User) AcceptFollowReq() error {
+	insta := user.inst
+	data, err := insta.prepareData(
+		map[string]interface{}{
+			"user_id":    user.ID,
+			"radio_type": "wifi-none",
+		},
+	)
+	if err != nil {
+		return err
+	}
+	body, err := insta.sendRequest(
+		&reqOptions{
+			Endpoint: fmt.Sprintf(urlFriendshipAccept, user.ID),
+			Query:    generateSignature(data),
+			IsPost:   true,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	resp := friendResp{}
+	err = json.Unmarshal(body, &resp)
+	user.Friendship = resp.Friendship
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RejectFollowReq deny the follow request
+//User.Friendship will be updated
+func (user *User) RejectFollowReq() error {
+	insta := user.inst
+	data, err := insta.prepareData(
+		map[string]interface{}{
+			"user_id":    user.ID,
+			"radio_type": "wifi-none",
+		},
+	)
+	if err != nil {
+		return err
+	}
+	body, err := insta.sendRequest(
+		&reqOptions{
+			Endpoint: fmt.Sprintf(urlFriendshipDeny, user.ID),
+			Query:    generateSignature(data),
+			IsPost:   true,
+		},
+	)
+	if err != nil {
+		return err
+	}
+	resp := friendResp{}
+	err = json.Unmarshal(body, &resp)
+	user.Friendship = resp.Friendship
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
